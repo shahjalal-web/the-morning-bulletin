@@ -17,7 +17,9 @@
     "calendar": "Content calendar",
     "menu": "Menu",
     "roles": "Roles & permissions",
-    "curation": "Homepage controls"
+    "curation": "Homepage controls",
+    "menuBar": "Menu bar",
+    "newGallery": "New photo gallery"
   },
   "access": {
     "signInRequired": "Sign in to use the newsroom.",
@@ -126,7 +128,8 @@
       "explainer": "Explainer",
       "opinion": "Opinion",
       "photo": "Photo",
-      "video": "Video"
+      "video": "Video",
+      "gallery": "Photo gallery (several photos)"
     },
     "category": "Section",
     "chooseCategory": "Choose a section",
@@ -137,7 +140,7 @@
     "image": "Featured image",
     "chooseImage": "Choose from library",
     "removeImage": "Remove image",
-    "imageAlt": "Alt text for this story",
+    "imageAlt": "Image description (alt), optional",
     "imageCaption": "Caption",
     "imageCredit": "Image credit",
     "video": "Video link (YouTube/Vimeo)",
@@ -168,7 +171,9 @@
       "tags": "At least one tag",
       "internal_links": "Internal links work",
       "canonical": "Canonical URL points to this page",
-      "translation": "Has a version in the other language"
+      "translation": "Has a version in the other language",
+      "gallery": "Gallery has at least 2 photos",
+      "gallery_captions": "Every photo has a description"
     },
     "required": "Required",
     "recommended": "Recommended",
@@ -200,7 +205,17 @@
     "needHeadline": "Write a headline first, then save.",
     "saveDraft": "Save draft",
     "newHint": "Write the headline, summary and story on this page. After the first save the publish and review buttons appear here.",
-    "translationMissing": "No version in this language yet: click to start one"
+    "translationMissing": "No version in this language yet: click to start one",
+    "savedOk": "Successfully saved (draft).",
+    "updatedOk": "Successfully updated. The changes are on the site.",
+    "publishedOk": "Successfully uploaded! The story is now live on the site.",
+    "scheduledOk": "Successfully scheduled. It will be published automatically at the chosen time.",
+    "doneOk": "Done successfully.",
+    "update": "Update",
+    "updateHint": "After changing a published story, press this button and the site updates too.",
+    "updateHintDirty": "Changes are not saved yet. Press \"Update\" to put them on the site.",
+    "skipTop": "Don't show in the first (Latest) block",
+    "skipTopHint": "When ticked, the story stays out of the Latest block at the top of the homepage and only appears in its own section's block (for example Sports)."
   },
   "toolbar": {
     "bold": "Bold",
@@ -283,7 +298,8 @@
     "deleteHasChildren": "This section has subsections. Delete them, or move them under another section, before deleting it.",
     "moveStories": "Move its {count} stories to",
     "delete": "Delete section",
-    "deleteConfirm": "Delete the section “{name}” for good? Its stories move to the section you chose, and it is removed from the menu and the homepage."
+    "deleteConfirm": "Delete the section “{name}” for good? Its stories move to the section you chose, and it is removed from the menu and the homepage.",
+    "orderHint": "To change the order of sections in the site's menu bar, or hide one, go to:"
   },
   "homepage": {
     "intro": "Choose which sections appear on the homepage, in what order and with which layout. The lead story, top stories and breaking banner are set from each story’s homepage controls.",
@@ -621,5 +637,46 @@
     "notLiveHelp": "These stories have homepage settings but are not published. They take effect once published.",
     "openPage": "See all homepage controls on one page →",
     "showingInTop": "Showing in top stories (a story never appears twice)"
+  },
+  "menuBar": {
+    "intro": "Choose which sections appear in the site's top menu bar, and in what order. Every change saves at once; there is no separate Save button.",
+    "preview": "How the menu bar will look",
+    "previewLang": "Preview language",
+    "previewNote": "▾ means hovering the section opens its subsections. Hidden sections still appear under \"All sections\", and their pages still work.",
+    "arrange": "Order and visibility",
+    "how1": "Press ↑ or ↓ to move a section one place left or right. Number 1 is leftmost in the menu.",
+    "how2": "Pick a number in \"Place\" to jump a section straight there.",
+    "how3": "Untick \"Show in menu\" to hide a section from the bar without deleting it. Press \"Subsections\" to see and order a section's subsections.",
+    "up": "Move left / up",
+    "down": "Move right / down",
+    "place": "Place",
+    "show": "Show in menu",
+    "hiddenBadge": "Hidden from menu",
+    "saving": "Saving…",
+    "saved": "Saved. The site's menu updates right away.",
+    "readOnly": "You can view the menu but do not have permission to change it.",
+    "subsections": "Subsections ({count})",
+    "subHint": "Subsections appear in this order in the \"{name}\" dropdown.",
+    "inactive": "{count} sections are switched off (not Active), so they are not listed.",
+    "addNote": "To add, rename or delete sections, go to:"
+  },
+  "gallery": {
+    "title": "Photo gallery",
+    "newTitle": "New photo gallery",
+    "help": "Upload many photos at once. Write each photo's own description and credit under it, and use ↑ ↓ to set the order. Readers see the photos in this order as a carousel. The first photo is also used as the cover image unless you choose another.",
+    "empty": "No photos yet. Add photos with the buttons below (at least 2).",
+    "upload": "Upload photos (choose several)",
+    "uploading": "Uploading… {done}/{total}",
+    "fromLibrary": "Choose from library",
+    "count": "{count} photos",
+    "caption": "Description of photo {n}",
+    "captionPlaceholder": "e.g. An aerial view shows the nearly completed Kamalapur Metro Rail Station.",
+    "credit": "Photo: (photographer)",
+    "creditPlaceholder": "e.g. Mehedi Hasan",
+    "up": "Move earlier",
+    "down": "Move later",
+    "remove": "Remove photo",
+    "someFailed": "{count} photos could not be uploaded. Please try again.",
+    "bodyOptional": "Body (optional for a gallery)"
   }
 }

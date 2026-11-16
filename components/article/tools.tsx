@@ -80,7 +80,7 @@ export function ReaderControls() {
 
   return (
     <div role="group" aria-label={t("readingTools")} className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-muted">{t("textSize")}</span>
+      <span className="hidden text-sm text-muted sm:inline">{t("textSize")}</span>
       <button type="button" className={btn} onClick={() => change(-1)} disabled={size === "sm"} aria-label={t("smaller")}>
         A−
       </button>
@@ -312,4 +312,17 @@ function toEmbed(raw: string): { src: string; host: string } | null {
     return null;
   }
   return null;
+}
+
+/** Newsroom staff see a shortcut to this story in the editor; readers never do. */
+export function EditStoryLink({ id }: { id: string }) {
+  const t = useTranslations("article");
+  const locale = useLocale() as "bn" | "en";
+  const { me } = useAuth();
+  if (!me?.permissions.includes("article:create")) return null;
+  return (
+    <Link href={paths.admin(locale, `articles/${id}`)} className={`${btn} border-brand text-brand`}>
+      ✎ {t("editStory")}
+    </Link>
+  );
 }

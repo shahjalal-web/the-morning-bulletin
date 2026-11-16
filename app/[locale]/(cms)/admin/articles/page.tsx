@@ -50,9 +50,14 @@ export default function ArticlesPage() {
     <div>
       <PageTitle
         actions={
-          <Link href={paths.admin(locale, "articles/new")} className={btnPrimary}>
-            + {t("nav.newArticle")}
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`${paths.admin(locale, "articles/new")}?format=gallery`} className={btn}>
+              + {t("nav.newGallery")}
+            </Link>
+            <Link href={paths.admin(locale, "articles/new")} className={btnPrimary}>
+              + {t("nav.newArticle")}
+            </Link>
+          </div>
         }
       >
         {t("nav.articles")}

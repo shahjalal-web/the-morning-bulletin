@@ -40,6 +40,8 @@ export interface CmsCategory {
   parent: string | null;
   order: number;
   isActive: boolean;
+  /** Missing on sections saved before the menu page existed: shown. */
+  showInMenu?: boolean;
   articleCount: number;
 }
 
@@ -76,7 +78,8 @@ export interface CmsArticle {
   locale: "bn" | "en";
   translationGroup: string;
   status: "draft" | "in_review" | "scheduled" | "published" | "archived";
-  format: "standard" | "explainer" | "opinion" | "photo" | "video";
+  format: "standard" | "explainer" | "opinion" | "photo" | "video" | "gallery";
+  gallery?: { media: string; caption?: string; credit?: string }[];
   title: string;
   slug: string;
   previousSlugs: string[];
@@ -94,6 +97,7 @@ export interface CmsArticle {
   stats?: { views7: number; views30: number };
   isFeatured: boolean;
   isEditorsPick: boolean;
+  skipTop?: boolean;
   pinnedUntil: string | null;
   breakingUntil: string | null;
   scheduledFor: string | null;

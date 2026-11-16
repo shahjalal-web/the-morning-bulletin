@@ -11,15 +11,18 @@ export function StoryImage({
   ratio = "16/9",
   preload = false,
   className = "",
+  fill = false,
 }: {
   image: Img;
   sizes: string;
   ratio?: "16/9" | "4/3" | "1/1" | "3/2";
   preload?: boolean;
   className?: string;
+  /** Fill the parent's box (which then sets the size) instead of keeping the ratio. */
+  fill?: boolean;
 }) {
   return (
-    <div className={`relative overflow-hidden bg-surface-2 ${className}`} style={{ aspectRatio: ratio }}>
+    <div className={`relative overflow-hidden bg-surface-2 ${fill ? "h-full w-full" : ""} ${className}`} style={fill ? undefined : { aspectRatio: ratio }}>
       <Image
         src={image.url}
         alt={image.alt}

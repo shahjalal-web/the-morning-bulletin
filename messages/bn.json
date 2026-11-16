@@ -90,7 +90,14 @@
     "shareEmail": "ইমেইলে পাঠান",
     "shareShort": "শেয়ার",
     "post": "পোস্ট",
-    "email": "ইমেইল"
+    "email": "ইমেইল",
+    "editStory": "এডিট করুন",
+    "galleryLabel": "ছবির গ্যালারি: {title}",
+    "slideOf": "ছবি {n} / {total}",
+    "photoBy": "ছবি: {credit}",
+    "prevPhoto": "আগের ছবি",
+    "nextPhoto": "পরের ছবি",
+    "thumbnails": "সব ছবি"
   },
   "list": {
     "page": "পৃষ্ঠা {page}",

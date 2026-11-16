@@ -5,7 +5,9 @@ import { useState } from "react";
 import { useApi, type CmsCategory, type CmsTag } from "@/components/cms/hooks";
 import { btn, btnPrimary, can, ErrorNote, field, PageTitle, Panel } from "@/components/cms/shell";
 import { useAuth } from "@/components/providers";
+import Link from "next/link";
 import { apiFetch, ApiError } from "@/lib/client-api";
+import { paths } from "@/lib/urls";
 
 type Draft = { nameBn: string; nameEn: string; slugBn: string; slugEn: string; descBn: string; descEn: string; parent: string; order: number; isActive: boolean };
 const empty: Draft = { nameBn: "", nameEn: "", slugBn: "", slugEn: "", descBn: "", descEn: "", parent: "", order: 0, isActive: true };
@@ -108,7 +110,6 @@ function CategoryForm({ initial, id, categories, onDone, onClose }: { initial: D
               slug: { bn: slugify(d.slugBn) || slugify(d.nameBn), en: slugify(d.slugEn) || slugify(d.nameEn) },
               description: { bn: d.descBn, en: d.descEn },
               parent: d.parent || null,
-              order: Number(d.order) || 0,
               isActive: d.isActive,
             },
           });
@@ -155,10 +156,6 @@ function CategoryForm({ initial, id, categories, onDone, onClose }: { initial: D
               </option>
             ))}
         </select>
-      </label>
-      <label className="text-sm">
-        {t("taxonomy.order")}
-        <input type="number" min={0} max={1000} value={d.order} onChange={(e) => setD({ ...d, order: Number(e.target.value) })} className={field} />
       </label>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" className="h-5 w-5" checked={d.isActive} onChange={(e) => setD({ ...d, isActive: e.target.checked })} />
@@ -226,7 +223,6 @@ export default function TaxonomyPage() {
   const categories = cats.data?.data ?? [];
   // Each section followed by its own subsections.
   const tree = categories.filter((c) => !c.parent).flatMap((p) => [p, ...categories.filter((c) => c.parent === p.id)]);
-
   return (
     <div className="space-y-8">
       <PageTitle>{t("nav.taxonomy")}</PageTitle>
@@ -245,6 +241,12 @@ export default function TaxonomyPage() {
             <CategoryForm initial={empty} categories={categories} onDone={() => { setEditing(null); void cats.reload(); }} onClose={() => setEditing(null)} />
           </div>
         )}
+        <p className="mb-3 text-sm text-muted">
+          {t("taxonomy.orderHint")}{" "}
+          <Link href={paths.admin(locale, "menu")} className="text-link underline">
+            {t("nav.menuBar")}
+          </Link>
+        </p>
         <ul className="divide-y divide-rule">
           {tree.map((c) => (
             <li key={c.id} className={`py-3 ${c.parent ? "ml-5 border-l-2 border-rule pl-3" : ""}`}>

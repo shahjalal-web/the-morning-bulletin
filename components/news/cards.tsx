@@ -22,16 +22,20 @@ export function LeadStory({ locale, story }: { locale: Locale; story: ArticleCar
   return (
     <article className={`grid gap-4 md:gap-6 ${story.image ? "md:grid-cols-[3fr_2fr]" : ""}`}>
       {story.image && (
-        <Link href={paths.article(locale, story.slug)} className="card-link block" tabIndex={-1} aria-hidden="true">
-          <StoryImage image={story.image} sizes="(min-width: 1280px) 560px, (min-width: 768px) 55vw, 100vw" preload />
+        // On wider screens the picture fills the row, so it is as tall as the headline and summary
+        // beside it (at least a 16:9-like height): no empty space under either.
+        <Link href={paths.article(locale, story.slug)} className="card-link relative block aspect-video md:aspect-auto md:min-h-[17rem] lg:min-h-[19rem]" tabIndex={-1} aria-hidden="true">
+          <span className="block h-full md:absolute md:inset-0">
+            <StoryImage image={story.image} sizes="(min-width: 1280px) 560px, (min-width: 768px) 55vw, 100vw" preload fill />
+          </span>
         </Link>
       )}
       <div className="flex min-w-0 flex-col justify-center">
         <Kicker locale={locale} story={story} />
         <Link href={paths.article(locale, story.slug)} className="card-link">
-          <h2 className="headline mt-1 text-[1.6rem] sm:text-3xl xl:text-[2.3rem]">{story.title}</h2>
+          <h2 className="headline mt-1 text-[1.4rem] sm:text-[1.6rem] xl:text-[1.85rem]">{story.title}</h2>
         </Link>
-        {story.summary && <p className="mt-3 line-clamp-4 text-base text-ink-2">{story.summary}</p>}
+        {story.summary && <p className="mt-2 line-clamp-4 text-base text-ink-2">{story.summary}</p>}
         <StoryMeta locale={locale} story={story} showAuthors />
       </div>
     </article>

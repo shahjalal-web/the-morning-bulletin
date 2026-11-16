@@ -25,6 +25,9 @@ export function SiteHeader({ locale, categories }: { locale: Locale; categories:
   const common = getT(locale, "common");
   const top = categories.filter((c) => !c.parentId);
   const childrenOf = (id: string) => categories.filter((c) => c.parentId === id);
+  // The bar shows what the newsroom chose on the Menu bar page; "All sections" still lists everything.
+  const inBar = top.filter((c) => c.inMenu !== false);
+  const barChildrenOf = (id: string) => childrenOf(id).filter((c) => c.inMenu !== false);
 
   return (
     <header data-site-header className="border-b border-rule bg-paper">
@@ -74,8 +77,8 @@ export function SiteHeader({ locale, categories }: { locale: Locale; categories:
                 {t("latest")}
               </Link>
             </li>
-            {top.map((c) => {
-              const subs = childrenOf(c.id);
+            {inBar.map((c) => {
+              const subs = barChildrenOf(c.id);
               return subs.length > 0 ? (
                 <NavDropdown
                   key={c.id}

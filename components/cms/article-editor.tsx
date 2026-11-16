@@ -9,6 +9,7 @@ import { useAuth } from "@/components/providers";
 import { apiFetch, ApiError } from "@/lib/client-api";
 import { paths } from "@/lib/urls";
 import { formatWhen, fromLocalInput, staffName, toLocalInput, useApi, type CmsArticle, type CmsCategory, type CmsMedia, type CmsStaff, type CmsTag } from "./hooks";
+import { GalleryEditor, type GalleryItem } from "./gallery-editor";
 import { MediaPicker } from "./media-picker";
 import { RichText } from "./rich-text";
 import { uploadImage } from "./upload";
@@ -29,12 +30,14 @@ type Form = {
   imageCaption: string;
   imageCredit: string;
   videoUrl: string;
+  gallery: GalleryItem[];
   seoTitle: string;
   seoDescription: string;
   canonicalUrl: string;
   focusKeyword: string;
   isFeatured: boolean;
   isEditorsPick: boolean;
+  skipTop: boolean;
   pinnedUntil: string;
   breakingUntil: string;
 };
@@ -53,12 +56,14 @@ const toForm = (a: CmsArticle): Form => ({
   imageCaption: a.imageCaption ?? "",
   imageCredit: a.imageCredit ?? "",
   videoUrl: a.videoUrl ?? "",
+  gallery: (a.gallery ?? []).map((g) => ({ media: String(g.media), caption: g.caption ?? "", credit: g.credit ?? "" })),
   seoTitle: a.seo?.title ?? "",
   seoDescription: a.seo?.description ?? "",
   canonicalUrl: a.seo?.canonicalUrl ?? "",
   focusKeyword: a.seo?.focusKeyword ?? "",
   isFeatured: a.isFeatured,
   isEditorsPick: a.isEditorsPick,
+  skipTop: Boolean(a.skipTop),
   pinnedUntil: toLocalInput(a.pinnedUntil),
   breakingUntil: toLocalInput(a.breakingUntil),
 });
@@ -78,11 +83,13 @@ function payload(f: Form, canCurate: boolean) {
     imageCaption: f.imageCaption,
     imageCredit: f.imageCredit,
     videoUrl: f.videoUrl,
+    gallery: f.gallery,
     seo: { title: f.seoTitle, description: f.seoDescription, canonicalUrl: f.canonicalUrl, focusKeyword: f.focusKeyword },
     ...(canCurate
       ? {
           isFeatured: f.isFeatured,
           isEditorsPick: f.isEditorsPick,
+          skipTop: f.skipTop,
           pinnedUntil: fromLocalInput(f.pinnedUntil),
           breakingUntil: fromLocalInput(f.breakingUntil),
         }
@@ -93,12 +100,12 @@ function payload(f: Form, canCurate: boolean) {
 const AUTOSAVE_MS = 4000;
 
 /** A story that exists only in this browser until its first save. */
-const blankArticle = (locale: "bn" | "en"): CmsArticle => ({
+const blankArticle = (locale: "bn" | "en", format: CmsArticle["format"] = "standard"): CmsArticle => ({
   id: "",
   locale,
   translationGroup: "",
   status: "draft",
-  format: "standard",
+  format,
   title: "",
   slug: "",
   previousSlugs: [],
@@ -111,6 +118,7 @@ const blankArticle = (locale: "bn" | "en"): CmsArticle => ({
   seo: {},
   isFeatured: false,
   isEditorsPick: false,
+  skipTop: false,
   pinnedUntil: null,
   breakingUntil: null,
   scheduledFor: null,
@@ -184,15 +192,17 @@ function LanguageTabs({
  * empty and creates the draft on the first save (or autosave once there is a
  * headline), then carries on in place with the full workflow.
  */
-export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: string; newLocale?: "bn" | "en"; translationOf?: string }) {
+export function ArticleEditor({ id, newLocale = "bn", newFormat, translationOf }: { id?: string; newLocale?: "bn" | "en"; newFormat?: CmsArticle["format"]; translationOf?: string }) {
   const t = useTranslations("cms");
   const uiLocale = useLocale() as "bn" | "en";
   const router = useRouter();
   const { me } = useAuth();
   // A new story starts as an empty form right away; an existing one loads below.
-  const [article, setArticle] = useState<CmsArticle | null>(() => (id ? null : blankArticle(newLocale)));
-  const [form, setForm] = useState<Form | null>(() => (id ? null : toForm(blankArticle(newLocale))));
+  const [article, setArticle] = useState<CmsArticle | null>(() => (id ? null : blankArticle(newLocale, newFormat)));
+  const [form, setForm] = useState<Form | null>(() => (id ? null : toForm(blankArticle(newLocale, newFormat))));
   const [dirty, setDirty] = useState(false);
+  // A clear confirmation after a manual save, update or publish.
+  const [success, setSuccess] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "autosaved" | "failed" | "conflict">("idle");
   const [error, setError] = useState<string | null>(null);
   const [markUpdated, setMarkUpdated] = useState(false);
@@ -318,6 +328,7 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
         setMarkUpdated(false);
         setSaveState(mode === "manual" ? "saved" : "autosaved");
         setError(null);
+        if (mode === "manual") setSuccess(t(res.data.status === "draft" ? "editor.savedOk" : "editor.updatedOk"));
       } catch (err) {
         if (err instanceof ApiError && err.status === 409) setSaveState("conflict");
         else {
@@ -359,6 +370,7 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
     if (["publish", "unpublish", "archive"].includes(action) && !window.confirm(t(`confirm.${action}`))) return;
     if (dirty) await save("manual");
     setError(null);
+    setSuccess(null);
     try {
       const current = await apiFetch<{ data: CmsArticle }>(`/admin/articles/${article.id}`);
       const res = await apiFetch<{ data: CmsArticle }>(`/admin/articles/${article.id}/transition`, {
@@ -368,6 +380,7 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
       setArticle(res.data);
       setForm(toForm(res.data));
       setDirty(false);
+      setSuccess(t(action === "publish" ? "editor.publishedOk" : action === "schedule" ? "editor.scheduledOk" : "editor.doneOk"));
     } catch (err) {
       if (err instanceof ApiError && err.code === "validation_failed") {
         const failed = (err.details as { checklist?: string[] } | undefined)?.checklist;
@@ -498,7 +511,7 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
           )}
           {editable && (
             <button type="button" className={btnPrimary} onClick={() => void save("manual")} disabled={saveState === "saving"}>
-              {isNew ? t("editor.saveDraft") : t("common.save")}
+              {isNew ? t("editor.saveDraft") : article.status === "draft" ? t("common.save") : t("editor.update")}
             </button>
           )}
         </div>
@@ -509,6 +522,19 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
           {t("common.conflict")}
           <button type="button" className={btn} onClick={() => void load()}>
             {t("common.reload")}
+          </button>
+        </div>
+      )}
+      {success && (
+        <div role="status" className="mb-4 flex flex-wrap items-center gap-3 rounded border border-brand/40 bg-brand/10 p-3 text-sm font-semibold text-brand">
+          <span>✓ {success}</span>
+          {article.status === "published" && (
+            <Link href={paths.article(article.locale, article.slug)} target="_blank" className="font-normal text-link underline">
+              {t("editor.viewLive")}
+            </Link>
+          )}
+          <button type="button" className="ml-auto px-2 text-lg leading-none" aria-label={t("common.close")} onClick={() => setSuccess(null)}>
+            ×
           </button>
         </div>
       )}
@@ -528,8 +554,23 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
               {t("editor.summaryHint")} ({form.summary.length}/400)
             </span>
           </label>
+          {form.format === "gallery" && (
+            <Panel title={t("gallery.title")}>
+              <GalleryEditor
+                items={form.gallery}
+                lang={lang}
+                editable={editable}
+                onError={setError}
+                onChange={(items) => {
+                  update("gallery", items);
+                  // The first photo becomes the cover for cards and sharing, unless one is chosen.
+                  if (!form.featuredImage && items[0]) update("featuredImage", items[0].media);
+                }}
+              />
+            </Panel>
+          )}
           <div>
-            <p className="mb-1 text-sm font-semibold">{t("editor.body")}</p>
+            <p className="mb-1 text-sm font-semibold">{form.format === "gallery" ? t("gallery.bodyOptional") : t("editor.body")}</p>
             <RichText value={form.body} onChange={(html) => update("body", html)} readOnly={!editable} label={t("editor.body")} lang={lang} onUploadError={() => setError(t("editor.uploadFailed"))} />
           </div>
 
@@ -669,6 +710,14 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
                   <p className="text-sm text-muted">{t("editor.newHint")}</p>
                 </>
               )}
+              {!isNew && editable && article.status !== "draft" && (
+                <>
+                  <button type="button" className={btnPrimary} onClick={() => void save("manual")} disabled={saveState === "saving"}>
+                    {t("editor.update")}
+                  </button>
+                  <p className="text-xs text-muted">{dirty ? t("editor.updateHintDirty") : t("editor.updateHint")}</p>
+                </>
+              )}
               {article.permissions.actions
                 .filter((a) => a !== "schedule")
                 .map((a) => (
@@ -738,7 +787,7 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
               <label className="text-sm">
                 {t("editor.format")}
                 <select value={form.format} onChange={(e) => update("format", e.target.value as Form["format"])} disabled={!editable} className={field}>
-                  {(["standard", "explainer", "opinion", "photo", "video"] as const).map((f) => (
+                  {(["standard", "gallery", "explainer", "opinion", "photo", "video"] as const).map((f) => (
                     <option key={f} value={f}>
                       {t(`editor.formats.${f}`)}
                     </option>
@@ -914,6 +963,13 @@ export function ArticleEditor({ id, newLocale = "bn", translationOf }: { id?: st
                 <label className="flex items-center gap-2">
                   <input type="checkbox" className="h-5 w-5" checked={form.isEditorsPick} disabled={!editable} onChange={(e) => update("isEditorsPick", e.target.checked)} />
                   {t("editor.editorsPick")}
+                </label>
+                <label className="flex items-start gap-2">
+                  <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0" checked={form.skipTop} disabled={!editable} onChange={(e) => update("skipTop", e.target.checked)} />
+                  <span>
+                    {t("editor.skipTop")}
+                    <span className="block text-xs text-muted">{t("editor.skipTopHint")}</span>
+                  </span>
                 </label>
                 <label className="block">
                   {t("editor.pinnedUntil")}

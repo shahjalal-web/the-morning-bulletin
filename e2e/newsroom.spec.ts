@@ -63,10 +63,10 @@ test("an editor signs in, writes, publishes and the story goes live", async ({ p
   await page.keyboard.type("The council approved the plan after a public consultation. Work will begin once funding is confirmed and contractors are selected.");
   await page.getByRole("button", { name: "Centre" }).click();
   await expect(body.locator('p[style*="text-align: center"]')).toHaveCount(1);
-  await page.getByLabel("Section").selectOption({ label: "Economy" });
+  await page.getByRole("combobox", { name: /^Section/ }).selectOption({ label: "Economy" });
   await page.getByRole("button", { name: "Save draft" }).first().click();
   await expect(page).toHaveURL(/\/en\/admin\/articles\/[a-f0-9]{24}$/);
-  await expect(page.getByRole("status").filter({ hasText: "Saved" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /^Saved$/ })).toBeVisible();
   // Still the same page: nothing typed was lost.
   await expect(page.getByRole("textbox", { name: "Headline", exact: true })).toHaveValue(headline);
 
@@ -74,7 +74,7 @@ test("an editor signs in, writes, publishes and the story goes live", async ({ p
   await expect(page.getByText("Published", { exact: true }).first()).toBeVisible();
 
   // The public page is revalidated by the API webhook and now exists.
-  const viewLive = page.getByRole("link", { name: "View on site" });
+  const viewLive = page.getByRole("link", { name: "View on site" }).first();
   const href = await viewLive.getAttribute("href");
   expect(href).toMatch(/^\/en\/news\//);
   const storyUrl = page.url();
@@ -82,7 +82,7 @@ test("an editor signs in, writes, publishes and the story goes live", async ({ p
   // The Bangla tab starts the translation with the same section.
   await page.getByRole("group", { name: "Language" }).getByRole("button", { name: "Bangla +" }).click();
   await page.waitForURL(/\/en\/admin\/articles\/new\?translationOf=[a-f0-9]{24}&locale=bn$/);
-  await expect(page.getByLabel("Section").locator("option:checked")).toHaveText("অর্থনীতি");
+  await expect(page.getByRole("combobox", { name: /^Section/ }).locator("option:checked")).toHaveText("অর্থনীতি");
   await page.getByRole("group", { name: "Language" }).getByRole("button", { name: "English" }).click();
   await page.waitForURL(storyUrl);
 
@@ -147,7 +147,7 @@ test("a large photo is compressed and uploaded from the editor, and the story ca
   expect(uploads).toHaveLength(2);
 
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByRole("status").filter({ hasText: "Saved" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /^Saved$/ })).toBeVisible();
   await page.reload();
   await expect(inBody).toBeVisible();
 

@@ -90,7 +90,14 @@
     "shareEmail": "Share by email",
     "shareShort": "Share",
     "post": "Post",
-    "email": "Email"
+    "email": "Email",
+    "editStory": "Edit story",
+    "galleryLabel": "Photo gallery: {title}",
+    "slideOf": "Photo {n} of {total}",
+    "photoBy": "Photo: {credit}",
+    "prevPhoto": "Previous photo",
+    "nextPhoto": "Next photo",
+    "thumbnails": "All photos"
   },
   "list": {
     "page": "Page {page}",

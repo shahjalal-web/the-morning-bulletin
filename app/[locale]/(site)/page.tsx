@@ -36,10 +36,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <EmptyState title={t("empty")} />
       ) : (
         <>
-          {/* First block (the publisher's sketch): Editor's Pick, a lead story with three more under it, and Most read beside it. */}
+          {/* First block: Latest — a lead story with three more under it, and Most read beside it. */}
           <div className="grid gap-8 lg:grid-cols-12">
             <section aria-labelledby="top-stories" className="min-w-0 lg:col-span-9">
-              <SectionHeading id="top-stories">{t("editorsPick")}</SectionHeading>
+              <SectionHeading id="top-stories" href={paths.latest(locale)} linkLabel={t("seeAllLatest")}>
+                {t("latest")}
+              </SectionHeading>
               <LeadStory locale={locale} story={home.lead} />
               {home.top.length > 0 && (
                 <div className="mt-6 grid gap-6 border-t border-rule pt-6 sm:grid-cols-3">

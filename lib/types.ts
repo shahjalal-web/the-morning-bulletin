@@ -6,6 +6,8 @@ export interface Category {
   slug: string;
   description: string;
   parentId: string | null;
+  /** False when the newsroom hid it from the menu bar (its page still works). */
+  inMenu?: boolean;
   alternates: Record<Locale, string | null>;
 }
 
@@ -46,7 +48,7 @@ export interface Image {
   focalY: number;
 }
 
-export type ArticleFormat = "standard" | "explainer" | "opinion" | "photo" | "video";
+export type ArticleFormat = "standard" | "explainer" | "opinion" | "photo" | "video" | "gallery";
 
 export interface ArticleCard {
   id: string;
@@ -70,6 +72,8 @@ export interface ArticleDetail extends ArticleCard {
   body: string;
   tags: Tag[];
   videoUrl: string | null;
+  /** Photo gallery stories: photos in order, each with its own caption and credit. */
+  gallery?: Image[];
   seo: { title: string; description: string; canonicalUrl: string; socialImage: Image | null };
   translations: { locale: Locale; slug: string }[];
 }

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { BookmarkButton, ReaderControls, ReadingProgress, ShareActions, VideoEmbed, ViewTracker } from "@/components/article/tools";
+import { BookmarkButton, EditStoryLink, ReaderControls, ReadingProgress, ShareActions, VideoEmbed, ViewTracker } from "@/components/article/tools";
+import { GalleryCarousel } from "@/components/article/gallery";
 import { NumberedList, StoryCard } from "@/components/news/cards";
 import { Breadcrumbs, JsonLd, SectionHeading } from "@/components/news/common";
 import { StoryImage } from "@/components/news/story-image";
@@ -98,33 +99,42 @@ export default async function ArticlePage({ params }: PageProps<"/[locale]/news/
       <ReadingProgress targetId="article-body" />
       <ViewTracker id={a.id} />
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <article id="article-top" aria-labelledby="article-title" className="min-w-0">
           <div className="focus-hide">
             <Breadcrumbs locale={locale} items={crumbs} />
           </div>
-          <header className="mt-4 max-w-3xl">
+          {/* Headline, picture and text share one width. The summary sits under the picture,
+              and byline, date and reading tools fit in two compact rows. */}
+          <header className="mt-4">
             {a.format === "explainer" && <p className="kicker">{home("explainers")}</p>}
             {a.format === "opinion" && <p className="kicker">{home("opinion")}</p>}
-            <h1 id="article-title" className="headline mt-1 text-[2rem] sm:text-[2.6rem] lg:text-5xl">
+            <h1 id="article-title" className="headline mt-1 text-[1.75rem] sm:text-[2.1rem] lg:text-[2.35rem]">
               {a.title}
             </h1>
-            {a.summary && <p className="mt-4 text-lg text-ink-2 sm:text-xl">{a.summary}</p>}
-            <div className="mt-5 space-y-1 border-y border-rule py-3">
-              <Byline locale={locale} story={a} />
-              <PublishedUpdated locale={locale} story={a} />
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-y border-rule py-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <Byline locale={locale} story={a} />
+                <PublishedUpdated locale={locale} story={a} />
+              </div>
+              <div className="no-print">
+                <ReaderControls />
+              </div>
             </div>
-            <div className="no-print mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="no-print mt-3 flex flex-wrap items-center justify-between gap-3">
               <ShareActions url={url} title={a.title} />
-              <BookmarkButton group={a.translationGroup} />
-            </div>
-            <div className="no-print mt-3">
-              <ReaderControls />
+              <div className="flex flex-wrap items-center gap-2">
+                <EditStoryLink id={a.id} />
+                <BookmarkButton group={a.translationGroup} />
+              </div>
             </div>
           </header>
 
-          {a.image && (
-            <figure className="mt-6">
+          {/* A photo gallery shows its photos in a carousel instead of the single cover photo. */}
+          {a.format === "gallery" && a.gallery?.length ? (
+            <GalleryCarousel images={a.gallery} title={a.title} />
+          ) : a.image && (
+            <figure className="mt-5">
               <StoryImage image={a.image} sizes="(min-width: 1280px) 860px, (min-width: 1024px) 66vw, 100vw" preload />
               {(a.image.caption || a.image.credit) && (
                 <figcaption className="mt-2 text-sm text-muted">
@@ -136,19 +146,21 @@ export default async function ArticlePage({ params }: PageProps<"/[locale]/news/
             </figure>
           )}
 
+          {a.summary && <p className="mt-5 border-l-4 border-brand pl-4 text-lg font-medium text-ink-2 sm:text-xl">{a.summary}</p>}
+
           {a.videoUrl && <VideoEmbed url={a.videoUrl} title={a.title} />}
 
-          <div id="article-body" className="mt-8">
-            <div className="prose-news" dangerouslySetInnerHTML={{ __html: bodyStart }} />
+          <div id="article-body" className="mt-6">
+            <div className="prose-news max-w-none" dangerouslySetInnerHTML={{ __html: bodyStart }} />
             {bodyRest && (
               <>
-                <AdSlot placement="article_inline" className="focus-hide max-w-[68ch]" />
-                <div className="prose-news mt-[1.1em]" dangerouslySetInnerHTML={{ __html: bodyRest }} />
+                <AdSlot placement="article_inline" className="focus-hide" />
+                <div className="prose-news mt-[1.1em] max-w-none" dangerouslySetInnerHTML={{ __html: bodyRest }} />
               </>
             )}
           </div>
 
-          {a.updatedAt && <p className="mt-8 max-w-[68ch] rounded bg-surface-2 p-3 text-sm text-ink-2">{t("updatedNote")}</p>}
+          {a.updatedAt && <p className="mt-8 rounded bg-surface-2 p-3 text-sm text-ink-2">{t("updatedNote")}</p>}
 
           {a.tags.length > 0 && (
             <div className="mt-8 flex flex-wrap items-center gap-2">
