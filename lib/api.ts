@@ -21,6 +21,17 @@ import type {
  * exactly what changed. Tag scheme mirrors back-end/src/services/revalidate.ts.
  */
 
+/**
+ * Lifetime for data that changes during the day (homepage, lists, breaking, most read).
+ * Publishing, editing, curation, expiring breaking/pinned flags and changes in the most-read
+ * list already refresh these through the API's webhook, so this timer is only a safety net.
+ * Keep it long: the
+ * breaking ticker is in the site layout, so its lifetime becomes the rebuild interval of
+ * EVERY public page, and each rebuild costs server CPU and an ISR write. At one minute it
+ * exhausted the Vercel Hobby CPU allowance.
+ */
+const NEWS_LIFE = { stale: 300, revalidate: 3600, expire: 86_400 };
+
 const API = (process.env.API_INTERNAL_URL ?? "http://localhost:4000").replace(/\/$/, "");
 /** Identifies this server to the API so cached reads are not throttled as a single client IP. */
 const INTERNAL_KEY = process.env.INTERNAL_API_KEY;
@@ -68,7 +79,7 @@ const emptyList = (page: number, limit: number): ListResult => ({ data: [], meta
 
 export async function getHomepage(locale: Locale): Promise<Homepage | null> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife(NEWS_LIFE);
   cacheTag("articles", "settings", "taxonomy");
   return (await get<{ data: Homepage }>(`/homepage?${q({ locale })}`))?.data ?? null;
 }
@@ -78,7 +89,7 @@ export async function getArticles(
   opts: { category?: string; tag?: string; author?: string; date?: string; format?: string; page?: number; limit?: number } = {},
 ): Promise<ListResult | null> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife(NEWS_LIFE);
   cacheTag("articles");
   const page = opts.page ?? 1;
   const limit = opts.limit ?? 20;
@@ -111,8 +122,8 @@ export async function getRelated(locale: Locale, id: string): Promise<ArticleCar
 
 export async function getPopular(locale: Locale, limit = 5): Promise<ArticleCard[]> {
   "use cache";
-  // Counts change constantly; a short lifetime keeps the list honest without hammering the API.
-  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  // Most-read shifts slowly; it also sits on every story page, so it shares the news lifetime.
+  cacheLife(NEWS_LIFE);
   cacheTag("articles", "popular");
   return (await get<{ data: ArticleCard[] }>(`/articles/popular?${q({ locale, limit })}`))?.data ?? [];
 }
@@ -232,7 +243,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 
 export async function getBreaking(locale: Locale): Promise<ArticleCard[]> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife(NEWS_LIFE);
   cacheTag("articles");
   return (await get<{ data: ArticleCard[] }>(`/articles/breaking?${q({ locale })}`))?.data ?? [];
 }

@@ -185,7 +185,7 @@ export default function ArticlesPage() {
       </ul>
 
       <div className="hidden overflow-x-auto rounded-lg border border-rule bg-surface sm:block">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-160 text-sm">
           <thead className="border-b border-rule text-left text-xs uppercase text-muted">
             <tr>
               <th className="w-10 p-3">

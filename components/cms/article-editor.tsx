@@ -888,7 +888,7 @@ export function ArticleEditor({ id, newLocale = "bn", newFormat, translationOf }
             ) : null}
             {editable && (
               <div className="mt-2 flex flex-wrap gap-2">
-                <label className={`${btnPrimary} cursor-pointer has-[:focus-visible]:outline-2 ${uploadingImage ? "pointer-events-none opacity-50" : ""}`}>
+                <label className={`${btnPrimary} cursor-pointer has-focus-visible:outline-2 ${uploadingImage ? "pointer-events-none opacity-50" : ""}`}>
                   {uploadingImage ? t("editor.uploading") : t("media.upload")}
                   <input
                     type="file"

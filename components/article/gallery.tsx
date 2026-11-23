@@ -89,7 +89,7 @@ export function GalleryCarousel({ images, title }: { images: Img[]; title: strin
                   {img.credit && <span className="ml-1 text-sm text-muted">{t("photoBy", { credit: img.credit })}</span>}
                 </figcaption>
               )}
-              <div className="relative aspect-[3/2] w-full overflow-hidden bg-[#111] md:col-start-2">
+              <div className="relative aspect-3/2 w-full overflow-hidden bg-[#111] md:col-start-2">
                 <Image
                   src={img.url}
                   alt={img.alt || img.caption || ""}
