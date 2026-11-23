@@ -26,7 +26,9 @@ export const ensureStatic = "navigation";
 
 export async function generateStaticParams({ params }: { params: { locale: string } }) {
   const locale = isLocale(params.locale) ? params.locale : LOCALES[0];
-  const slugs = await getRecentSlugs(locale, 30);
+  // Very long (older) Bangla slugs overflow the 255-byte file-name limit of the build's page
+  // cache, so they are not prebuilt; they render on their first visit instead.
+  const slugs = (await getRecentSlugs(locale, 30)).filter((s) => new TextEncoder().encode(s).length <= 200);
   // Cache Components needs at least one value; this placeholder simply 404s.
   return (slugs.length ? slugs : ["__none__"]).map((slug) => ({ slug }));
 }
